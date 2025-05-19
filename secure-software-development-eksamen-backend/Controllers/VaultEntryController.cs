@@ -5,6 +5,7 @@ using secure_software_development_eksamen_backend.Data;
 using secure_software_development_eksamen_backend.Models;
 using secure_software_development_eksamen_backend.Services;
 using System.Security.Claims;
+using secure_software_development_eksamen_backend.Models.Dto;
 
 namespace secure_software_development_eksamen_backend.Controllers;
 
@@ -24,7 +25,7 @@ public class VaultController : ControllerBase
     }
 
     [HttpPost("createVaultEntry")]
-    public async Task<IActionResult> Create([FromBody] VaultEntry entry)
+    public async Task<IActionResult> Create([FromBody] VaultEntryCreate entry)
     {
         var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
         
@@ -34,18 +35,31 @@ public class VaultController : ControllerBase
             return Unauthorized("Session expired or encryption key not found. Please log in again.");
         }
         
-        var (encryptedPassword, iv) = _authService.EncryptPassword(entry.EncryptedPassword, userSpecificKey);
+        var (encryptedPassword, iv) = _authService.EncryptPassword(entry.Password, userSpecificKey);
 
-        entry.UserId = userId;
-        entry.EncryptedPassword = encryptedPassword;
-        entry.Iv = iv;
-        entry.CreatedAt = DateTime.UtcNow;
-        entry.UpdatedAt = DateTime.UtcNow;
+        //Create vaultEntry Object from vaultentrycreate
+        
+        var newVaultEntry = new VaultEntry
+        {
+            Id = Guid.NewGuid().ToString(),
+            UserId = userId,
+            Name = entry.Name,
+            Username = entry.Username,
+            EncryptedPassword = encryptedPassword,
+            Iv = iv,
+            Url = entry.Url,
+            Notes = entry.Notes,
+            CreatedAt = DateTime.UtcNow,
+            UpdatedAt = DateTime.UtcNow
+        };
+        
+        
+       
 
-        _context.VaultEntries.Add(entry);
+        _context.VaultEntries.Add(newVaultEntry);
         await _context.SaveChangesAsync();
         
-        entry.EncryptedPassword = _authService.DecryptPassword(encryptedPassword, iv, userSpecificKey);
+        
         return Ok(entry);
     }
 

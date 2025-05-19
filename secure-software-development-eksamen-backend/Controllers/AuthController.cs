@@ -63,8 +63,7 @@ namespace secure_software_development_eksamen_backend.Controllers;
             if (user == null || !_authService.VerifyPassword(model.Password, user.PasswordHash))
                 return Unauthorized("Invalid credentials");
             
-            byte[] salt = user.Salt; 
-            byte[] encryptionKey = _authService.GenerateEncryptionKey(model.Password, salt); 
+            byte[] encryptionKey = _authService.GenerateEncryptionKey(model.Password, user.Salt); 
 
             // Gem encryptionKey i hukommelse for en session. 
             HttpContext.Session.Set("EncryptionKey", encryptionKey);
@@ -188,7 +187,8 @@ namespace secure_software_development_eksamen_backend.Controllers;
             {
                 UserId = user.Id,
                 Token = HashToken(refreshToken),
-                ExpiryDate = DateTime.UtcNow.AddDays(7)
+                ExpiryDate = DateTime.UtcNow.AddDays(1)
+                // skiftet fra 7 dage til 1 dag, da det ville given en potentiel hacker et mindre vindue
             };
 
             _context.RefreshTokens.Add(tokenEntity);

@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("secure-software-development-eksamen-backend")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+bcce7269012cb05b26d2e0046eaf5ef591387b0e")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+0c214688ed57e19eabbca5cd9a7d779ec781b8c5")]
 [assembly: System.Reflection.AssemblyProductAttribute("secure-software-development-eksamen-backend")]
 [assembly: System.Reflection.AssemblyTitleAttribute("secure-software-development-eksamen-backend")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
