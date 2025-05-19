@@ -43,7 +43,8 @@ namespace secure_software_development_eksamen_backend.Controllers;
             {
                 Username = model.Username,
                 PasswordHash = _authService.HashPassword(model.Password),
-                EncryptionKey = _authService.GenerateEncryptionKey(model.Password)
+                Salt = _authService.GenerateSalt()
+                
             };
 
             _context.Users.Add(user);
@@ -61,6 +62,14 @@ namespace secure_software_development_eksamen_backend.Controllers;
             var user = await _context.Users.FirstOrDefaultAsync(u => u.Username == model.Username);
             if (user == null || !_authService.VerifyPassword(model.Password, user.PasswordHash))
                 return Unauthorized("Invalid credentials");
+            
+            byte[] salt = user.Salt; 
+            byte[] encryptionKey = _authService.GenerateEncryptionKey(model.Password, salt); 
+
+            // Gem encryptionKey i hukommelse for en session. 
+            HttpContext.Session.Set("EncryptionKey", encryptionKey);
+            
+            
 
             var accessToken = GenerateJwtToken(user);
             var refreshToken = await GenerateAndStoreRefreshToken(user);
@@ -76,7 +85,7 @@ namespace secure_software_development_eksamen_backend.Controllers;
                 Path = "/api/auth"
             });
 
-            return Ok(new { AccessToken = accessToken });
+            return Ok(new { AccessToken = accessToken, EncryptionKey = encryptionKey });
         }
 
         
@@ -89,6 +98,8 @@ namespace secure_software_development_eksamen_backend.Controllers;
             var tokens = await _context.RefreshTokens.Where(t => t.UserId == userId).ToListAsync();
             _context.RefreshTokens.RemoveRange(tokens);
             await _context.SaveChangesAsync();
+            
+            HttpContext.Session.Clear();
 
             Response.Cookies.Delete("refreshToken", new CookieOptions
             {

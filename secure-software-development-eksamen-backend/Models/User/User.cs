@@ -5,9 +5,7 @@ public class User
     public int Id { get; set; } 
     public string Username { get; set; } = string.Empty;
     public string PasswordHash { get; set; } = string.Empty;
-    
-    public string EncryptionKey { get; set; } = string.Empty;
-    
+    public byte[] Salt { get; set; }
     public RefreshToken? RefreshToken { get; set; }
     public List<VaultEntry> VaultEntries { get; set; } = new(); // En til mange
 }

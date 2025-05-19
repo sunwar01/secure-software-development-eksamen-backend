@@ -61,7 +61,7 @@ public class AuthService
     
     
     //AES-256
-    public (string EncryptedPassword, string Iv) EncryptPassword(string password, string userSpecificKey)
+    public (string EncryptedPassword, string Iv) EncryptPassword(string password, byte[] userSpecificKey)
     {
         byte[] salt = RandomNumberGenerator.GetBytes(16);
         using var pbkdf2 = new Rfc2898DeriveBytes(userSpecificKey, salt, 600000, HashAlgorithmName.SHA256);
@@ -83,7 +83,7 @@ public class AuthService
         return (Convert.ToBase64String(result), Convert.ToBase64String(iv));
     }
 
-    public string DecryptPassword(string encryptedPassword, string iv, string userSpecificKey)
+    public string DecryptPassword(string encryptedPassword, string iv, byte[] userSpecificKey)
     {
         byte[] encryptedBytes = Convert.FromBase64String(encryptedPassword);
         byte[] ivBytes = Convert.FromBase64String(iv);
@@ -105,26 +105,34 @@ public class AuthService
         return Encoding.UTF8.GetString(decrypted);
     }
     
-    public string GenerateEncryptionKey(string password)
+    public byte[] GenerateEncryptionKey(string password, byte[] salt)
     {
-        byte[] salt = RandomNumberGenerator.GetBytes(16);
         using var pbkdf2 = new Rfc2898DeriveBytes(password, salt, 600000, HashAlgorithmName.SHA256);
         byte[] key = pbkdf2.GetBytes(32);
         byte[] keyBytes = new byte[48];
         Array.Copy(salt, 0, keyBytes, 0, 16);
         Array.Copy(key, 0, keyBytes, 16, 32);
-        return Convert.ToBase64String(keyBytes);
+        return keyBytes;
     }
     
-    public async Task<string> GetEncryptionKeyAsync(int userId)
+    public byte[] GenerateSalt()
     {
-        var user = await _context.Users
-            .FirstOrDefaultAsync(u => u.Id == userId);
-        if (user == null || string.IsNullOrEmpty(user.EncryptionKey))
-            throw new InvalidOperationException("Encryption key not found for user.");
-
-        return user.EncryptionKey;
+        byte[] salt = RandomNumberGenerator.GetBytes(16);
+        
+        return salt;
     }
+    
+
+    
+    
+
+   
+    
+  
     
     
 }
+    
+
+    
+    

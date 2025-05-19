@@ -31,6 +31,17 @@ builder.Services.AddCors(options =>
     });
 });
 
+builder.Services.AddDistributedMemoryCache(); 
+builder.Services.AddSession(options =>
+{
+    options.IdleTimeout = TimeSpan.FromDays(1); 
+    options.Cookie.HttpOnly = true;
+    options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
+    options.Cookie.SameSite = SameSiteMode.Strict;
+});
+
+
+
 
 
 // Configure JWT Authentication
@@ -68,6 +79,7 @@ app.UseHttpsRedirection();
 // Apply CORS policy
 app.UseCors("AllowAngularApp");
 
+app.UseSession();
 app.UseAuthentication();
 app.UseAuthorization();
 

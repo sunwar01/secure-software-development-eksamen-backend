@@ -15,6 +15,7 @@ public class VaultController : ControllerBase
 {
     private readonly ApplicationDbContext _context;
     private readonly AuthService _authService;
+    
 
     public VaultController(ApplicationDbContext context, AuthService authService)
     {
@@ -22,11 +23,16 @@ public class VaultController : ControllerBase
         _authService = authService;
     }
 
-    [HttpPost]
+    [HttpPost("createVaultEntry")]
     public async Task<IActionResult> Create([FromBody] VaultEntry entry)
     {
         var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
-        var userSpecificKey = await _authService.GetEncryptionKeyAsync(userId);
+        
+        
+        if (!HttpContext.Session.TryGetValue("EncryptionKey", out byte[]? userSpecificKey))
+        {
+            return Unauthorized("Session expired or encryption key not found. Please log in again.");
+        }
         
         var (encryptedPassword, iv) = _authService.EncryptPassword(entry.EncryptedPassword, userSpecificKey);
 
@@ -43,12 +49,17 @@ public class VaultController : ControllerBase
         return Ok(entry);
     }
 
-    [HttpGet]
+    [HttpGet("getVaultEntries")]
     public async Task<IActionResult> GetAll()
     {
         var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
-        var userSpecificKey = await _authService.GetEncryptionKeyAsync(userId);
-
+        
+        if (!HttpContext.Session.TryGetValue("EncryptionKey", out byte[]? userSpecificKey))
+        {
+            return Unauthorized("Session expired or encryption key not found. Please log in again.");
+            
+        }
+        
         var entries = await _context.VaultEntries
             .Where(e => e.UserId == userId)
             .ToListAsync();
@@ -61,11 +72,15 @@ public class VaultController : ControllerBase
         return Ok(entries);
     }
 
-    [HttpPut("{id}")]
+    [HttpPut("updateVaultEntry{id}")]
     public async Task<IActionResult> Update(string id, [FromBody] VaultEntry updatedEntry)
     {
         var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
-        var userSpecificKey = await _authService.GetEncryptionKeyAsync(userId);
+       
+        if (!HttpContext.Session.TryGetValue("EncryptionKey", out byte[]? userSpecificKey))
+        {
+            return Unauthorized("Session expired or encryption key not found. Please log in again.");
+        }
 
         var entry = await _context.VaultEntries
             .FirstOrDefaultAsync(e => e.Id == id && e.UserId == userId);
@@ -89,7 +104,7 @@ public class VaultController : ControllerBase
         return Ok(entry);
     }
 
-    [HttpDelete("{id}")]
+    [HttpDelete("deleteVaultEntry{id}")]
     public async Task<IActionResult> Delete(string id)
     {
         var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
