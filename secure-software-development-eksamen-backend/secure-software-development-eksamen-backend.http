@@ -1,0 +1,6 @@
+@secure_software_development_eksamen_backend_HostAddress = http://localhost:5294
+
+GET {{secure_software_development_eksamen_backend_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

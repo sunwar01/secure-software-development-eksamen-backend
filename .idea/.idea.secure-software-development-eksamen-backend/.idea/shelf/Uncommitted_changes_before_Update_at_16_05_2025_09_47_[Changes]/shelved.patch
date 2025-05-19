@@ -1,0 +1,18 @@
+Index: secure-software-development-eksamen-backend/Services/AuthService.cs
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>namespace secure_software_development_eksamen_backend.Services;\r\n\r\npublic class AuthService\r\n{\r\n    \r\n}
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/secure-software-development-eksamen-backend/Services/AuthService.cs b/secure-software-development-eksamen-backend/Services/AuthService.cs
+--- a/secure-software-development-eksamen-backend/Services/AuthService.cs	(revision 634e4c5b92b6d925e883ccb6db810f90c305e6ec)
++++ b/secure-software-development-eksamen-backend/Services/AuthService.cs	(date 1747297315655)
+@@ -2,5 +2,5 @@
+ 
+ public class AuthService
+ {
+-    
++   
+ }
+\ No newline at end of file
