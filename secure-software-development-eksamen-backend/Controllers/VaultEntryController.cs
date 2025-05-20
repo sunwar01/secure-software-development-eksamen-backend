@@ -78,45 +78,36 @@ public class VaultController : ControllerBase
             .Where(e => e.UserId == userId)
             .ToListAsync();
         
+        var vaultEntryGetDtos = new List<VaultEntryGet>();
+        
         foreach (var entry in entries)
         {
-            entry.EncryptedPassword = _authService.DecryptPassword(entry.EncryptedPassword, entry.Iv, userSpecificKey);
+            var decryptedPassword = _authService.DecryptPassword(
+                entry.EncryptedPassword,
+                entry.Iv,
+                userSpecificKey
+            );
+            
+            var vaultEntryGetDto = new VaultEntryGet
+            {
+                Id = entry.Id, 
+                UserId = userId,
+                Name = entry.Name,
+                Username = entry.Username,
+                DecryptedPassword = decryptedPassword,
+                Url = entry.Url,
+                Notes = entry.Notes
+            };
+            
+            vaultEntryGetDtos.Add(vaultEntryGetDto);
         }
-
-        return Ok(entries);
-    }
-
-    [HttpPut("updateVaultEntry{id}")]
-    public async Task<IActionResult> Update(string id, [FromBody] VaultEntry updatedEntry)
-    {
-        var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
-       
-        if (!HttpContext.Session.TryGetValue("EncryptionKey", out byte[]? userSpecificKey))
-        {
-            return Unauthorized("Session expired or encryption key not found. Please log in again.");
-        }
-
-        var entry = await _context.VaultEntries
-            .FirstOrDefaultAsync(e => e.Id == id && e.UserId == userId);
-        if (entry == null)
-            return NotFound();
-
-       
-        var (encryptedPassword, iv) = _authService.EncryptPassword(updatedEntry.EncryptedPassword, userSpecificKey);
-        entry.Name = updatedEntry.Name;
-        entry.Username = updatedEntry.Username;
-        entry.EncryptedPassword = encryptedPassword;
-        entry.Iv = iv;
-        entry.Url = updatedEntry.Url;
-        entry.Notes = updatedEntry.Notes;
-        entry.UpdatedAt = DateTime.UtcNow;
-
-        await _context.SaveChangesAsync();
-
         
-        entry.EncryptedPassword = _authService.DecryptPassword(encryptedPassword, iv, userSpecificKey);
-        return Ok(entry);
+        
+
+        return Ok(vaultEntryGetDtos);
     }
+
+   
 
     [HttpDelete("deleteVaultEntry{id}")]
     public async Task<IActionResult> Delete(string id)

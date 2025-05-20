@@ -10,11 +10,11 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="b0819796-f84f-492f-a25f-d03a8b22ce82" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/secure-software-development-eksamen-backend/Models/VaultEntry/Dto/VaultEntryCreate.cs" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/secure-software-development-eksamen-backend/Models/VaultEntry/Dto/VaultEntryGet.cs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/.idea.secure-software-development-eksamen-backend/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.secure-software-development-eksamen-backend/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/secure-software-development-eksamen-backend/Controllers/AuthController.cs" beforeDir="false" afterPath="$PROJECT_DIR$/secure-software-development-eksamen-backend/Controllers/AuthController.cs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/secure-software-development-eksamen-backend/Controllers/VaultEntryController.cs" beforeDir="false" afterPath="$PROJECT_DIR$/secure-software-development-eksamen-backend/Controllers/VaultEntryController.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/secure-software-development-eksamen-backend/Models/VaultEntry.cs" beforeDir="false" afterPath="$PROJECT_DIR$/secure-software-development-eksamen-backend/Models/VaultEntry/VaultEntry.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/secure-software-development-eksamen-backend/Program.cs" beforeDir="false" afterPath="$PROJECT_DIR$/secure-software-development-eksamen-backend/Program.cs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/secure-software-development-eksamen-backend/bin/Debug/net8.0/secure-software-development-eksamen-backend.dll" beforeDir="false" afterPath="$PROJECT_DIR$/secure-software-development-eksamen-backend/bin/Debug/net8.0/secure-software-development-eksamen-backend.dll" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/secure-software-development-eksamen-backend/bin/Debug/net8.0/secure-software-development-eksamen-backend.exe" beforeDir="false" afterPath="$PROJECT_DIR$/secure-software-development-eksamen-backend/bin/Debug/net8.0/secure-software-development-eksamen-backend.exe" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/secure-software-development-eksamen-backend/bin/Debug/net8.0/secure-software-development-eksamen-backend.pdb" beforeDir="false" afterPath="$PROJECT_DIR$/secure-software-development-eksamen-backend/bin/Debug/net8.0/secure-software-development-eksamen-backend.pdb" afterDir="false" />
@@ -52,10 +52,7 @@
 }</component>
   <component name="HighlightingSettingsPerFile">
     <setting file="mock://C:/Users/SW/RiderProjects/secure-software-development-eksamen-backend/secure-software-development-eksamen-backend/Controllers/AuthController.cs" root0="SKIP_HIGHLIGHTING" />
-    <setting file="mock://C:/Users/SW/RiderProjects/secure-software-development-eksamen-backend/secure-software-development-eksamen-backend/Data/ApplicationDbContext.cs" root0="SKIP_HIGHLIGHTING" />
-    <setting file="mock://C:/Users/SW/RiderProjects/secure-software-development-eksamen-backend/secure-software-development-eksamen-backend/Models/User/User.cs" root0="SKIP_HIGHLIGHTING" />
-    <setting file="mock://diff.cs" root0="SKIP_HIGHLIGHTING" />
-    <setting file="mock://diff.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock://C:/Users/SW/RiderProjects/secure-software-development-eksamen-backend/secure-software-development-eksamen-backend/Program.cs" root0="SKIP_HIGHLIGHTING" />
   </component>
   <component name="MetaFilesCheckinStateConfiguration" checkMetaFiles="true" />
   <component name="ProjectColorInfo">{
@@ -144,7 +141,9 @@
       <workItem from="1747647058668" duration="329000" />
       <workItem from="1747647403868" duration="954000" />
       <workItem from="1747648378783" duration="4532000" />
-      <workItem from="1747676297948" duration="5421000" />
+      <workItem from="1747676297948" duration="5650000" />
+      <workItem from="1747726741155" duration="8435000" />
+      <workItem from="1747735229044" duration="5538000" />
     </task>
     <task id="LOCAL-00001" summary="AuthService and models somewhat done, still need to test with frontend etc.">
       <option name="closed" value="true" />
@@ -170,7 +169,15 @@
       <option name="project" value="LOCAL" />
       <updated>1747652908967</updated>
     </task>
-    <option name="localTasksCounter" value="4" />
+    <task id="LOCAL-00004" summary="VaultEntryController modified">
+      <option name="closed" value="true" />
+      <created>1747684035568</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1747684035568</updated>
+    </task>
+    <option name="localTasksCounter" value="5" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -198,6 +205,7 @@
     <MESSAGE value="AuthService and models somewhat done, still need to test with frontend etc." />
     <MESSAGE value="Refresh token logic updated, as we only need one per user, so no need for one to many. Just realised i also committed the password for the mysql db :( So we probably have to reupload to github at some point" />
     <MESSAGE value="Removed EncryptionKey from the user object, and updated db. We now get EncryptionKey when we login and store it in memory session, so it is not exposed to the frontend. We only store the Salt on the user object now." />
-    <option name="LAST_COMMIT_MESSAGE" value="Removed EncryptionKey from the user object, and updated db. We now get EncryptionKey when we login and store it in memory session, so it is not exposed to the frontend. We only store the Salt on the user object now." />
+    <MESSAGE value="VaultEntryController modified" />
+    <option name="LAST_COMMIT_MESSAGE" value="VaultEntryController modified" />
   </component>
 </project>

@@ -73,6 +73,16 @@ namespace secure_software_development_eksamen_backend.Controllers;
             var accessToken = GenerateJwtToken(user);
             var refreshToken = await GenerateAndStoreRefreshToken(user);
             
+            
+            Response.Cookies.Append("accessToken", accessToken, new CookieOptions
+            {
+                HttpOnly = true,
+                Secure = _config.GetValue<bool>("CookieSettings:Secure"),
+                SameSite = SameSiteMode.Strict,
+                Expires = DateTime.UtcNow.AddMinutes(1),
+                Path = "/"
+            });
+            
             Response.Cookies.Append("refreshToken", refreshToken, new CookieOptions
             {
                 HttpOnly = true, 
@@ -84,7 +94,7 @@ namespace secure_software_development_eksamen_backend.Controllers;
                 Path = "/api/auth"
             });
 
-            return Ok(new { AccessToken = accessToken, EncryptionKey = encryptionKey });
+            return Ok(new { Message = "Login successful" });
         }
 
         
@@ -99,55 +109,74 @@ namespace secure_software_development_eksamen_backend.Controllers;
             await _context.SaveChangesAsync();
             
             HttpContext.Session.Clear();
-
-            Response.Cookies.Delete("refreshToken", new CookieOptions
-            {
-                HttpOnly = true,
-                Secure = _config.GetValue<bool>("CookieSettings:Secure"), 
-                // Skiftet til at bruge værdi ud fra environment
-                SameSite = SameSiteMode.Strict,
-                Path = "/api/auth"
-            });
+            
+            ClearAuthCookiesAndSession();
             
             return Ok(new { Message = "Logged out successfully" });
         }
         
-        [HttpPost("refresh")]
-        public async Task<IActionResult> Refresh([FromBody] RefreshTokenRequest request)
+     
+    [HttpPost("refresh")]
+    public async Task<IActionResult> Refresh()
+    {
+        var refreshToken = Request.Cookies["refreshToken"];
+        if (string.IsNullOrEmpty(refreshToken))
         {
-            if (string.IsNullOrEmpty(request.RefreshToken))
-                return BadRequest("Refresh token is required");
-
-            var hashedToken = HashToken(request.RefreshToken);
-            var token = await _context.RefreshTokens
-                .FirstOrDefaultAsync(t => t.Token == hashedToken && t.ExpiryDate > DateTime.UtcNow);
-
-            if (token == null)
-                return Unauthorized("Invalid or expired refresh token");
-
-            var user = await _context.Users.FindAsync(token.UserId);
-            if (user == null)
-                return Unauthorized("User not found");
-
-            var newAccessToken = GenerateJwtToken(user);
-            
-            await _context.RefreshTokens.Where(t => t.Id == token.Id).ExecuteDeleteAsync();
-            var newRefreshToken = await GenerateAndStoreRefreshToken(user);
-            
-            Response.Cookies.Append("refreshToken", newRefreshToken, new CookieOptions
-            {
-                HttpOnly = true, 
-                Secure = _config.GetValue<bool>("CookieSettings:Secure"), 
-                // Skiftet til at bruge værdi ud fra environment
-                SameSite = SameSiteMode.Strict,
-                Expires = DateTime.UtcNow.AddDays(1),
-                // skiftet fra 7 dage til 1 dag, da det ville given en potentiel hacker et mindre vindue
-                Path = "/api/auth"
-            });
-            
-            return Ok(new { AccessToken = newAccessToken});
+            ClearAuthCookiesAndSession();
+            return BadRequest("Refresh token is required");
         }
+
+        var hashedToken = HashToken(refreshToken);
+        var token = await _context.RefreshTokens
+            .FirstOrDefaultAsync(t => t.Token == hashedToken && t.ExpiryDate > DateTime.UtcNow);
+
+        if (token == null)
+        {
+            ClearAuthCookiesAndSession();
+            return Unauthorized("Invalid or expired refresh token");
+        }
+
+        var user = await _context.Users.FindAsync(token.UserId);
+        if (user == null)
+        {
+            ClearAuthCookiesAndSession();
+            return Unauthorized("User not found");
+        }
+
+        var newAccessToken = GenerateJwtToken(user);
         
+        
+        Response.Cookies.Append("accessToken", newAccessToken, new CookieOptions
+        {
+            HttpOnly = true,
+            Secure = _config.GetValue<bool>("CookieSettings:Secure"),
+            SameSite = SameSiteMode.Strict,
+            Expires = DateTime.UtcNow.AddMinutes(15),
+            Path = "/"
+        });
+
+        return Ok(new { Message = "Tokens refreshed" });
+    }
+
+private void ClearAuthCookiesAndSession()
+{
+    HttpContext.Session.Clear();
+    Response.Cookies.Delete("refreshToken", new CookieOptions
+    {
+        HttpOnly = true,
+        Secure = _config.GetValue<bool>("CookieSettings:Secure"),
+        SameSite = SameSiteMode.Strict,
+        Path = "/api/auth"
+    });
+    Response.Cookies.Delete("accessToken", new CookieOptions
+    {
+        HttpOnly = true,
+        Secure = _config.GetValue<bool>("CookieSettings:Secure"),
+        SameSite = SameSiteMode.Strict,
+        Path = "/"
+    });
+}
+
         
         
         private string GenerateJwtToken(User user)
@@ -172,14 +201,8 @@ namespace secure_software_development_eksamen_backend.Controllers;
         }
         
       
-
-        private async Task<string> GenerateAndStoreRefreshToken(User user)
+ private async Task<string> GenerateAndStoreRefreshToken(User user)
         {
-            var existingTokens = await _context.RefreshTokens
-                .Where(t => t.UserId == user.Id)
-                .ToListAsync();
-            _context.RefreshTokens.RemoveRange(existingTokens);
-
             var tokenBytes = RandomNumberGenerator.GetBytes(32);
             var refreshToken = Convert.ToBase64String(tokenBytes);
 
@@ -188,7 +211,6 @@ namespace secure_software_development_eksamen_backend.Controllers;
                 UserId = user.Id,
                 Token = HashToken(refreshToken),
                 ExpiryDate = DateTime.UtcNow.AddDays(1)
-                // skiftet fra 7 dage til 1 dag, da det ville given en potentiel hacker et mindre vindue
             };
 
             _context.RefreshTokens.Add(tokenEntity);
