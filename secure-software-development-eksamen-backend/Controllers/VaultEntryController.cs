@@ -5,6 +5,7 @@ using secure_software_development_eksamen_backend.Data;
 using secure_software_development_eksamen_backend.Models;
 using secure_software_development_eksamen_backend.Services;
 using System.Security.Claims;
+using Microsoft.AspNetCore.RateLimiting;
 using secure_software_development_eksamen_backend.Models.Dto;
 
 namespace secure_software_development_eksamen_backend.Controllers;
@@ -24,6 +25,7 @@ public class VaultController : ControllerBase
         _authService = authService;
     }
 
+    [EnableRateLimiting("globalPolicy")]
     [HttpPost("createVaultEntry")]
     public async Task<IActionResult> Create([FromBody] VaultEntryCreate entry)
     {
@@ -36,8 +38,7 @@ public class VaultController : ControllerBase
         }
         
         var (encryptedPassword, iv) = _authService.EncryptPassword(entry.Password, userSpecificKey);
-
-        //Create vaultEntry Object from vaultentrycreate
+        
         
         var newVaultEntry = new VaultEntry
         {
@@ -63,6 +64,7 @@ public class VaultController : ControllerBase
         return Ok(entry);
     }
 
+    [EnableRateLimiting("globalPolicy")]
     [HttpGet("getVaultEntries")]
     public async Task<IActionResult> GetAll()
     {
@@ -109,6 +111,7 @@ public class VaultController : ControllerBase
 
    
 
+    [EnableRateLimiting("globalPolicy")]
     [HttpDelete("deleteVaultEntry{id}")]
     public async Task<IActionResult> Delete(string id)
     {

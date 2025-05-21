@@ -4,6 +4,7 @@ using System.Security.Cryptography;
 using System.Text;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using secure_software_development_eksamen_backend.Data;
@@ -29,6 +30,7 @@ namespace secure_software_development_eksamen_backend.Controllers;
             _config = config;
         }
 
+        [EnableRateLimiting("authPolicy")]
         [HttpPost("register")]
         public async Task<IActionResult> Register([FromBody] UserRegister model)
         {
@@ -53,6 +55,7 @@ namespace secure_software_development_eksamen_backend.Controllers;
             return Ok(new { Message = "User registered successfully" });
         }
 
+        [EnableRateLimiting("authPolicy")]
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] UserLogin model)
         {
@@ -65,7 +68,7 @@ namespace secure_software_development_eksamen_backend.Controllers;
             
             byte[] encryptionKey = _authService.GenerateEncryptionKey(model.Password, user.Salt); 
 
-            // Gem encryptionKey i hukommelse for en session. 
+            // Gem encryptionKey i hukommelse for en session til at decrypt password for vaultentry. 
             HttpContext.Session.Set("EncryptionKey", encryptionKey);
             
             
@@ -79,7 +82,7 @@ namespace secure_software_development_eksamen_backend.Controllers;
                 HttpOnly = true,
                 Secure = _config.GetValue<bool>("CookieSettings:Secure"),
                 SameSite = SameSiteMode.Strict,
-                Expires = DateTime.UtcNow.AddMinutes(1),
+                Expires = DateTime.UtcNow.AddMinutes(15),
                 Path = "/"
             });
             
@@ -89,8 +92,8 @@ namespace secure_software_development_eksamen_backend.Controllers;
                 Secure = _config.GetValue<bool>("CookieSettings:Secure"), 
                 // Skiftet til at bruge værdi ud fra environment
                 SameSite = SameSiteMode.Strict,
-                Expires = DateTime.UtcNow.AddDays(1),
-                // skiftet fra 7 dage til 1 dag, da det ville given en potentiel hacker et mindre vindue
+                Expires = DateTime.UtcNow.AddHours(1),
+                // skiftet fra 7 dage til 1 time, da det ville given en potentiel hacker et mindre vindue
                 Path = "/api/auth"
             });
 
@@ -98,7 +101,7 @@ namespace secure_software_development_eksamen_backend.Controllers;
         }
 
         
-        
+        [EnableRateLimiting("authPolicy")]
         [HttpPost("logout")]
         [Authorize]
         public async Task<IActionResult> Logout()
@@ -115,7 +118,8 @@ namespace secure_software_development_eksamen_backend.Controllers;
             return Ok(new { Message = "Logged out successfully" });
         }
         
-     
+        
+        
     [HttpPost("refresh")]
     public async Task<IActionResult> Refresh()
     {
@@ -210,7 +214,8 @@ private void ClearAuthCookiesAndSession()
             {
                 UserId = user.Id,
                 Token = HashToken(refreshToken),
-                ExpiryDate = DateTime.UtcNow.AddDays(1)
+                ExpiryDate = DateTime.UtcNow.AddHours(1),
+                // skiftet fra 7 dage til 1 time, da det ville given en potentiel hacker et mindre vindue
             };
 
             _context.RefreshTokens.Add(tokenEntity);
